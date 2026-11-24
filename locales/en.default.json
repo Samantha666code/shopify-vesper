@@ -19,6 +19,10 @@
     "update": "Update",
     "remove": "Remove"
   },
+  "creator_offer": {
+    "property_name": "Creator benefit",
+    "warranty_included": "3-Year Warranty Included"
+  },
   "customers": {
     "login": {
       "email": "Email",

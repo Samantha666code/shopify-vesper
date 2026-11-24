@@ -38,6 +38,16 @@
                       <p class="v-cart-line__variant">{{ item.variant.title }}</p>
                     {%- endunless -%}
 
+                    {%- assign creator_property_name = 'creator_offer.property_name' | t -%}
+                    {%- assign creator_warranty = item.properties[creator_property_name] -%}
+                    {%- assign creator_warranty_text = 'creator_offer.warranty_included' | t -%}
+                    {%- if creator_warranty == creator_warranty_text -%}
+                      <p class="v-cart-line__benefit">
+                        {% render 'vesper-icons', icon: 'check' %}
+                        <span>{{ creator_warranty }}</span>
+                      </p>
+                    {%- endif -%}
+
                     <p class="v-cart-page__unit-price">{{ item.final_price | money_with_currency }}</p>
                   </div>
 
@@ -45,7 +55,7 @@
                     <div class="v-qty">
                       <button
                         type="button"
-                        data-cart-change="{{ item.variant.id }}"
+                        data-cart-change="{{ item.key | escape }}"
                         data-qty-value="{{ item.quantity | minus: 1 }}"
                         aria-label="Decrease quantity"
                       >
@@ -56,12 +66,12 @@
                         name="updates[]"
                         min="0"
                         value="{{ item.quantity }}"
-                        data-cart-input="{{ item.variant.id }}"
+                        data-cart-input="{{ item.key | escape }}"
                         aria-label="Quantity for {{ item.product.title | escape }}"
                       >
                       <button
                         type="button"
-                        data-cart-change="{{ item.variant.id }}"
+                        data-cart-change="{{ item.key | escape }}"
                         data-qty-value="{{ item.quantity | plus: 1 }}"
                         aria-label="Increase quantity"
                       >

@@ -379,7 +379,11 @@
               </div>
               <button type="button" class="v-btn v-btn--primary v-btn--block v-btn--lg vpd-add-to-cart" disabled>Coming soon</button>
             {%- else -%}
-              <form data-product-form class="vpd-form">
+              <form
+                data-product-form
+                class="vpd-form"
+                {% if product.handle == 'v600' or product.handle == 'v1000' %}data-creator-warranty-eligible="true"{% endif %}
+              >
                 <div class="vpd-price-section">
                   <span class="vpd-price-current" data-variant-price>{{ vpd_variant.price | money_with_currency }}</span>
                   <span class="vpd-price-compare" data-variant-compare {% unless vpd_variant.compare_at_price > vpd_variant.price %}hidden{% endunless %}>
@@ -389,6 +393,13 @@
                     {%- if vpd_variant.available -%}In stock{%- else -%}Out of Stock{%- endif -%}
                   </span>
                 </div>
+
+                {%- if product.handle == 'v600' or product.handle == 'v1000' -%}
+                  <p class="vpd-creator-benefit" data-creator-warranty-benefit hidden>
+                    {%- render 'vesper-icons', icon: 'check' -%}
+                    <span>{{ 'creator_offer.warranty_included' | t }}</span>
+                  </p>
+                {%- endif -%}
 
                 {%- unless vpd_variant.available -%}
                   <div class="vpd-out-of-stock">

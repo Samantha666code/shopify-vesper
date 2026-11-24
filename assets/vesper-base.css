@@ -1053,6 +1053,22 @@ button {
   margin: 0 0 6px;
 }
 
+.v-cart-line__benefit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  color: var(--vesper-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.v-cart-line__benefit .v-icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+}
+
 .v-cart-line__price {
   font-size: 14px;
   font-weight: 600;

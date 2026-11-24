@@ -524,14 +524,18 @@
        a JSON *number* fails that check with a 400 — it has to be sent as a
        string. /cart/add.js and /cart/update.js accept numbers, this one
        does not. */
-    change: function (variantId, quantity) {
+    change: function (lineId, quantity) {
       var previous = Cart.state && Cart.state.items
-        ? Cart.state.items.find(function (item) { return String(item.variant_id) === String(variantId); })
+        ? Cart.state.items.find(function (item) {
+            return String(item.key) === String(lineId) || String(item.variant_id) === String(lineId);
+          })
         : null;
 
-      return Cart.request('change', { id: String(variantId), quantity: quantity })
+      return Cart.request('change', { id: String(lineId), quantity: quantity })
         .then(function (cart) {
-          var current = cart.items.find(function (item) { return String(item.variant_id) === String(variantId); });
+          var current = cart.items.find(function (item) {
+            return String(item.key) === String(lineId) || String(item.variant_id) === String(lineId);
+          });
           if (previous && Vesper.trackEvent) {
             var previousQuantity = Number(previous.quantity || 0);
             var currentQuantity = current ? Number(current.quantity || 0) : 0;
@@ -616,6 +620,10 @@
         '<ul class="v-cart-lines">' +
         cart.items
           .map(function (item) {
+            var warrantyValue = window.VesperCreatorOffer
+              ? window.VesperCreatorOffer.getWarrantyValue(item.properties)
+              : '';
+
             return (
               '<li class="v-cart-line">' +
               '<img class="v-cart-line__img" src="' + escapeHtml(item.image || '') + '" alt="' + escapeHtml(item.product_title) + '" loading="lazy">' +
@@ -624,17 +632,20 @@
               (item.variant_title && item.variant_title !== 'Default Title'
                 ? '<p class="v-cart-line__variant">' + escapeHtml(item.variant_title) + '</p>'
                 : '') +
+              (warrantyValue
+                ? '<p class="v-cart-line__benefit">' + icon('check') + '<span>' + escapeHtml(warrantyValue) + '</span></p>'
+                : '') +
               '<div data-qty>' +
               '<div class="v-qty">' +
-              '<button type="button" data-cart-change="' + item.variant_id + '" data-qty-value="' + (item.quantity - 1) + '" aria-label="Decrease quantity">' + icon('minus') + '</button>' +
-              '<input type="number" min="0" value="' + item.quantity + '" data-cart-input="' + item.variant_id + '" aria-label="Quantity">' +
-              '<button type="button" data-cart-change="' + item.variant_id + '" data-qty-value="' + (item.quantity + 1) + '" aria-label="Increase quantity">' + icon('plus') + '</button>' +
+              '<button type="button" data-cart-change="' + escapeHtml(item.key) + '" data-qty-value="' + (item.quantity - 1) + '" aria-label="Decrease quantity">' + icon('minus') + '</button>' +
+              '<input type="number" min="0" value="' + item.quantity + '" data-cart-input="' + escapeHtml(item.key) + '" aria-label="Quantity">' +
+              '<button type="button" data-cart-change="' + escapeHtml(item.key) + '" data-qty-value="' + (item.quantity + 1) + '" aria-label="Increase quantity">' + icon('plus') + '</button>' +
               '</div>' +
               '</div>' +
               '</div>' +
               '<div>' +
               '<div class="v-cart-line__price">' + money(item.final_line_price) + '</div>' +
-              '<button type="button" class="v-cart-line__remove" data-cart-change="' + item.variant_id + '" data-qty-value="0" aria-label="Remove item">' + icon('close') + '</button>' +
+              '<button type="button" class="v-cart-line__remove" data-cart-change="' + escapeHtml(item.key) + '" data-qty-value="0" aria-label="Remove item">' + icon('close') + '</button>' +
               '</div>' +
               '</li>'
             );
@@ -668,7 +679,11 @@
         return;
       }
 
-      Cart.add(variantInput.value, quantityInput ? parseInt(quantityInput.value, 10) || 1 : 1).then(function () {
+      var properties = window.VesperCreatorOffer
+        ? window.VesperCreatorOffer.propertiesForForm(form)
+        : undefined;
+
+      Cart.add(variantInput.value, quantityInput ? parseInt(quantityInput.value, 10) || 1 : 1, properties).then(function () {
         openDrawer('vesper-cart-drawer');
       });
     });
