@@ -218,6 +218,16 @@
     {{ 'vesper-type.css' | asset_url | stylesheet_tag }}
 
     {{ content_for_header }}
+
+    <script
+      src="{{ 'vesper-creator-offer.js' | asset_url }}"
+      defer
+      data-attribution-id="3780156"
+      data-discount-code="AIMI10"
+      data-property-name="{{ 'creator_offer.property_name' | t | escape }}"
+      data-property-value="{{ 'creator_offer.warranty_included' | t | escape }}"
+      data-storage-days="30"
+    ></script>
   </head>
 
   {%- if template.name == 'index' -%}
