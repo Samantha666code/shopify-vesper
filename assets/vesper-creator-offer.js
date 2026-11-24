@@ -54,10 +54,8 @@
   function captureOffer() {
     var params = new URLSearchParams(window.location.search);
     var incomingAttributionId = params.get('dt_id') || '';
-    var appliedDiscountCode = getCookie('discount_code');
 
     if (incomingAttributionId !== attributionId) return;
-    if (appliedDiscountCode.toUpperCase() !== discountCode.toUpperCase()) return;
 
     storeOffer();
   }
