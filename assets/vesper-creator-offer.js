@@ -2,8 +2,7 @@
   'use strict';
 
   var script = document.currentScript;
-  var attributionId = script ? script.dataset.attributionId || '' : '';
-  var discountCode = script ? script.dataset.discountCode || '' : '';
+  var creatorOffers = JSON.parse((script && script.dataset.creatorOffers) || '{}');
   var propertyName = script ? script.dataset.propertyName || 'Creator benefit' : 'Creator benefit';
   var propertyValue = script ? script.dataset.propertyValue || '3-Year Warranty Included' : '3-Year Warranty Included';
   var storageDays = script ? parseInt(script.dataset.storageDays || '30', 10) : 30;
@@ -30,7 +29,7 @@
     document.cookie = cookieName + '=; Max-Age=0; Path=/; SameSite=Lax; Secure';
   }
 
-  function storeOffer() {
+  function storeOffer(attributionId, discountCode) {
     var expiresAt = Date.now() + storageDays * 24 * 60 * 60 * 1000;
     var offer = {
       attributionId: attributionId,
@@ -55,9 +54,9 @@
     var params = new URLSearchParams(window.location.search);
     var incomingAttributionId = params.get('dt_id') || '';
 
-    if (incomingAttributionId !== attributionId) return;
+    if (!Object.hasOwn(creatorOffers, incomingAttributionId)) return;
 
-    storeOffer();
+    storeOffer(incomingAttributionId, creatorOffers[incomingAttributionId]);
   }
 
   function readStoredOffer() {
@@ -81,25 +80,37 @@
     return offer;
   }
 
-  function isActive() {
+  function readActiveOffer() {
     var offer = readStoredOffer();
-    var active =
-      offer &&
-      offer.attributionId === attributionId &&
-      offer.discountCode.toUpperCase() === discountCode.toUpperCase() &&
-      Number(offer.expiresAt) > Date.now();
+    if (!offer) return null;
 
-    if (!active && offer) removeStoredOffer();
-    return Boolean(active);
+    if (
+      Object.hasOwn(creatorOffers, offer.attributionId) &&
+      typeof offer.discountCode === 'string' &&
+      offer.discountCode.toUpperCase() === creatorOffers[offer.attributionId] &&
+      Number(offer.expiresAt) > Date.now()
+    ) {
+      return offer;
+    }
+
+    removeStoredOffer();
+    return null;
+  }
+
+  function isActive() {
+    return Boolean(readActiveOffer());
   }
 
   function propertiesForForm(form) {
-    if (!form || form.dataset.creatorWarrantyEligible !== 'true' || !isActive()) return undefined;
+    if (!form || form.dataset.creatorWarrantyEligible !== 'true') return undefined;
+
+    var offer = readActiveOffer();
+    if (!offer) return undefined;
 
     var properties = {};
     properties[propertyName] = propertyValue;
-    properties._creator_attribution_id = attributionId;
-    properties._creator_offer_code = discountCode;
+    properties._creator_attribution_id = offer.attributionId;
+    properties._creator_offer_code = creatorOffers[offer.attributionId];
     return properties;
   }
 
